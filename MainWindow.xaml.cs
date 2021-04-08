@@ -79,15 +79,16 @@ namespace DownloadWallhaven
 
                     foreach (string url in listStrLineElements)
                     {
-                      
+                        if (!String.IsNullOrEmpty(url)) {
                             ThreadCrawlData(url);
+                        }
                     }
-
-                    foreach (string a in lstHref)
+                    for (int i = 0; i < lstHref.Count; i++)
                     {
+                        Crawl(lstHref[i]);
                         //  GetMetadataImage(a);
-                        Crawl(a);
                     }
+                   
                    // b = false;
 
 
@@ -101,7 +102,7 @@ namespace DownloadWallhaven
 
                         // setting the properties 
                         // of the work sheet  
-                        workSheet.TabColor = System.Drawing.Color.Black;
+                        //workSheet.TabColor = System.Drawing.Color.Black;
                         workSheet.DefaultRowHeight = 12;
 
                         // Setting the properties 
@@ -131,7 +132,7 @@ namespace DownloadWallhaven
                             workSheet.Cells[recordIndex, 1].Value = folder;
                             workSheet.Cells[recordIndex, 2].Value = item.Name;
                             workSheet.Cells[recordIndex, 3].Value = title;
-                            workSheet.Cells[recordIndex, 4].Value = title;
+                            workSheet.Cells[recordIndex, 4].Value = item.Description;
 
                             workSheet.Cells[recordIndex, 5].Value = item.Tags;
                             workSheet.Cells[recordIndex, 6].Value = (recordIndex - 1).ToString();
@@ -192,10 +193,12 @@ namespace DownloadWallhaven
             var htmlDoc = new HtmlDocument();
             htmlDoc.LoadHtml(htmlLearn);
             var htmlNodes = htmlDoc.DocumentNode.SelectNodes("/html/body/main/div[1]/section[1]/ul/li/figure/a");
-            foreach (var node in htmlNodes)
+
+            for (int i = 0; i < htmlNodes.Count; i++)
             {
-                lstHref.Add(node.Attributes["href"].Value);
+                lstHref.Add(htmlNodes[i].Attributes["href"].Value);
             }
+           
 
 
 
@@ -206,6 +209,7 @@ namespace DownloadWallhaven
             string html = "";
             httpClient = new HttpClient();
             html = httpClient.GetStringAsync(url).Result;
+            Thread.Sleep(500);
 
             return html;
         }
@@ -219,9 +223,20 @@ namespace DownloadWallhaven
             var title= titleStr.Split(stringSeparators3, StringSplitOptions.None).ToList()[0];
             var src = htmlDoc.DocumentNode.SelectNodes("/html/body/main/section/div[1]/img");
           
+            var des= src[0].Attributes["alt"].Value;
+
+          
+
 
             notification.ActionNotifi = "Đã lấy:" + lstRs.Count;
             ImageMetaData imageMeta = new ImageMetaData();
+
+            if (des.Length > 0)
+            {
+              string str=  string.Join(" ", des.Split().Skip(2));
+                imageMeta.Description=str;
+            }
+
             imageMeta.Tags = title;
             string srcstr = src[0].Attributes["data-cfsrc"].Value;
             List<string> lst = srcstr.Split(stringSeparators2, StringSplitOptions.None).ToList();
@@ -298,10 +313,12 @@ namespace DownloadWallhaven
         private string tags;
         private string url;
         private string name;
+        private string description;
 
         public string Url { get => url; set => url = value; }
         public string Tags { get => tags; set => tags = value; }
         public string Name { get => name; set => name = value; }
+        public string Description { get => description; set => description = value; }
     }
 
     public class Notification : INotifyPropertyChanged
