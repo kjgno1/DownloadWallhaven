@@ -193,23 +193,34 @@ namespace DownloadWallhaven
             var htmlDoc = new HtmlDocument();
             htmlDoc.LoadHtml(htmlLearn);
             var htmlNodes = htmlDoc.DocumentNode.SelectNodes("/html/body/main/div[1]/section[1]/ul/li/figure/a");
-
+            if (htmlNodes != null) { 
             for (int i = 0; i < htmlNodes.Count; i++)
             {
                 lstHref.Add(htmlNodes[i].Attributes["href"].Value);
             }
-           
-
-
-
-
+            
         }
+
+
+
+
+    }
         string CrawlDataFromURL(string url)
         {
             string html = "";
-            httpClient = new HttpClient();
-            html = httpClient.GetStringAsync(url).Result;
-            Thread.Sleep(500);
+            try
+            {
+               
+                httpClient = new HttpClient();
+                html = httpClient.GetStringAsync(url).Result;
+                Thread.Sleep(500);
+            }
+            catch (Exception)
+            {
+
+                return "";
+            }
+           
 
             return html;
         }
@@ -217,6 +228,7 @@ namespace DownloadWallhaven
         {
 
             string htmlLearn = CrawlDataFromURL(url);
+            if (htmlLearn.Length > 0) { 
             var htmlDoc = new HtmlDocument();
             htmlDoc.LoadHtml(htmlLearn);
             var titleStr = htmlDoc.DocumentNode.SelectSingleNode("/html/head/title").InnerText.Trim(); 
@@ -243,6 +255,7 @@ namespace DownloadWallhaven
             imageMeta.Name = lst[lst.Count - 1];
             imageMeta.Url = srcstr;
             lstRs.Add(imageMeta);
+            }
         }
 
         private void GetMetadataImage(string url)
